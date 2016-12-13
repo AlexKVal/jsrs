@@ -3,7 +3,8 @@ class PostsController < ApplicationController
 
   # GET /posts
   def index
-    @posts = Post.all
+    @posts = Post.order(created_at: :desc).all
+    @post = Post.new
   end
 
   # GET /posts/1
@@ -23,10 +24,15 @@ class PostsController < ApplicationController
   def create
     @post = Post.new(post_params)
 
-    if @post.save
-      redirect_to @post, notice: 'Post was successfully created.'
-    else
-      render :new
+    respond_to do |format|
+      if @post.save
+        format.html { redirect_to @post, notice: 'Post was successfully created.' }
+        format.js   {} # views/posts/create.js.erb
+        format.json { render json: @post, status: :created, location: @post }
+      else
+        format.html { render :new }
+        format.json { render json: @post.errors, status: :unprocessable_entity }
+      end
     end
   end
 
